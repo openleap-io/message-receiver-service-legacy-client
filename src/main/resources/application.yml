@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: legacy-client
+mrs-api:
+  base-url:
+  token-url:
+  client-id:
+  client-secret:
+logging:
+  level:
+    root: info
+    io.openleap: debug
