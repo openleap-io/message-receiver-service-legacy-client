@@ -40,7 +40,12 @@ public class SeederServiceRunner implements CommandLineRunner {
 
         MessageApiApi message = new MessageApiApi(apiClient);
 
-        MessageRequest messageRequest = legacyClientService.generateMessageRequest(content);
+        MessageRequest messageRequest = null;
+        try {
+            messageRequest = legacyClientService.generateMessageRequest(content);
+        } catch (IOException e) {
+           logger.error(e.getMessage());
+        }
 
         message.sendMessage(messageRequest);
 
