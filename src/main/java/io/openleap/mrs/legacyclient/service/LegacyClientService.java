@@ -97,8 +97,13 @@ public class LegacyClientService {
 
     private static void handleAttachments(String pathToAttachment, StringBuilder text, ArrayList<File> attachments) throws IOException {
         if (pathToAttachment.contains("*")) {
-            Path dir = Paths.get(pathToAttachment).getParent();
-            String pattern = Paths.get(pathToAttachment).getFileName().toString();
+            String normalizedPath = pathToAttachment.replace("\\", "/");
+            int lastSlash = normalizedPath.lastIndexOf('/');
+
+            String dirPath = normalizedPath.substring(0, lastSlash);
+            String pattern = normalizedPath.substring(lastSlash + 1);
+
+            Path dir = Paths.get(dirPath);
 
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, pattern)) {
                 for (Path entry : stream) {
