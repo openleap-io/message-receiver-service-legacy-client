@@ -11,12 +11,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 @Service
 public class SeederServiceRunner implements CommandLineRunner {
-    Logger logger = LogManager.getLogger(SeederServiceRunner.class);
+    static Logger logger = LogManager.getLogger(SeederServiceRunner.class);
     ApiClient apiClient;
     private final LegacyClientService legacyClientService;
 
@@ -26,16 +25,9 @@ public class SeederServiceRunner implements CommandLineRunner {
     }
 
 
-    public void seedData(String input) {
-        String content = "";
-        File file = new File(input);
-        try {
-            // Read file content into a String
-            content = Files.readString(file.toPath(),java.nio.charset.StandardCharsets.ISO_8859_1);
-            System.out.println("File content:\n" + content);
-        } catch (Exception e) {
-            logger.error("Error reading file: " + e.getMessage()+ e.getCause());
-        }
+    public void seedData(String filePath) {
+        String content = getFileContent(filePath);
+        if (content == null) return;
 
 
         MessageApiApi message = new MessageApiApi(apiClient);
@@ -44,15 +36,33 @@ public class SeederServiceRunner implements CommandLineRunner {
         try {
             messageRequest = legacyClientService.generateMessageRequest(content);
         } catch (IOException e) {
-           logger.error(e.getMessage());
+            logger.error(e.getMessage());
         }
 
         message.sendMessage(messageRequest);
 
     }
 
+    public static String getFileContent(String filePath) {
+        String content = "";
+        File file = new File(filePath);
+        try {
+            // Read file content into a String
+            content = Files.readString(file.toPath(), java.nio.charset.StandardCharsets.ISO_8859_1);
+            System.out.println("File content:\n" + content);
+        } catch (Exception e) {
+            logger.error("Error reading file: " + e.getMessage() + e.getCause());
+            return null;
+        }
+        return content;
+    }
+
     @Override
     public void run(String... args) {
+        if (args.length == 0) {
+            logger.error("No input file provided. Please specify a file path as an argument.");
+            return;
+        }
         seedData(String.valueOf(args[0]));
     }
 }
