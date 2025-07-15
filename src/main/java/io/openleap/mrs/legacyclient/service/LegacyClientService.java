@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 @Service
 public class LegacyClientService {
@@ -38,40 +39,39 @@ public class LegacyClientService {
         var lines = cfg.split("\\R");
         for (var line : lines) {
 
-            line = line.trim().replace(" ", "");
-
-            if (!isReceiptOverriden && line.startsWith("An:")) {
-                recipients.add(line.split("An:")[1]);
+            if (!isReceiptOverriden && Pattern.compile("^An\\s*:\\s*").matcher(line).find()) {
+                recipients.add(line.split("^An\\s*:")[1]);
             }
-            if (!isReceiptOverriden && line.startsWith("CC:")) {
-                cc.add(line.split("CC:")[1]);
+            if (!isReceiptOverriden && Pattern.compile("^CC\\s*:\\s*").matcher(line).find()) {
+                cc.add(line.split("^CC\\s*:")[1]);
             }
-            if (!isReceiptOverriden && line.startsWith("BCC:")) {
-                bcc.add(line.split("BCC:")[1]);
+            if (!isReceiptOverriden && Pattern.compile("^BCC\\s*:\\s*").matcher(line).find()) {
+                bcc.add(line.split("^BCC\\s*:")[1]);
             }
-            if (line.startsWith("Betreff:")) {
-                subject.append(line.split("Betreff:")[1]);
+            if (Pattern.compile("^Betreff\\s*:\\s*").matcher(line).find()) {
+                subject.append(line.split("^Betreff\\s*:")[1].trim());
             }
-            if (line.startsWith("Text:")) {
-                text.append(line.split("Text:").length > 0 ? line.split("Text:")[1] : "");
+            if (Pattern.compile("^Text\\s*:\\s*").matcher(line).find()) {
+                text.append(line.split("^Text\\s*:").length > 0 ? line.split("^Text\\s*:")[1] : "");
                 text.append("<br/>");
             }
-            if (line.startsWith("Anlage:")) {
-                var pathToAttachment = line.split("Anlage:")[1].trim();
+            if (Pattern.compile("^Anlage\\s*:\\s*").matcher(line).find()) {
+                var pathToAttachment = line.split("^Anlage\\s*:")[1].trim();
 
                 handleAttachments(pathToAttachment, text, attachments);
 
 
             }
-            if (line.startsWith("AnlageD:")) {
-                var pathToAttachment = line.split("AnlageD:")[1].trim();
+            if (Pattern.compile("^AnlageD\\s*:\\s*").matcher(line).find()) {
+                var pathToAttachment = line.split("^AnlageD\\s*:")[1].trim();
 
 
                 handleAttachments(pathToAttachment, text, attachments);
             }
-            if (line.startsWith("ProgName:")) {
+            if (Pattern.compile("^ProgName\\s*:\\s*").matcher(line).find()) {
+                text.append("<br/>");
                 text.append("\nProgName: ");
-                text.append(line.split("ProgName:")[1]);
+                text.append(line.split("^ProgName\\s*:")[1].trim());
             }
         }
 
